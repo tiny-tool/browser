@@ -1,23 +1,20 @@
-import puppeteer, { Page, Browser } from "puppeteer";
+import { Page } from "puppeteer";
 import fs from "fs";
 import { OrganicResult } from "../define";
+import { getRedirectUrl } from "../common/get-redirect-url";
 
 async function resolveSougouUrlAndContent(
-  browser: Browser,
-  ua: string,
+  page: Page,
   url: string
 ): Promise<{
   link: string;
   content: string;
 }> {
-  const page = await browser.newPage();
-  await page.setUserAgent(ua);
   try {
     await page.goto(url, { waitUntil: "networkidle0", timeout: 3000 });
   } catch (error) {}
   const link = page.url();
   const content = await page.content();
-  await page.close();
   return { link, content };
 }
 
@@ -69,6 +66,7 @@ const DefaultOptions = {
 };
 
 export default async function sougouWeixin(
+  page: Page,
   keyword: string,
   _options: {
     resolveUrl?: boolean;
@@ -76,18 +74,6 @@ export default async function sougouWeixin(
   }
 ) {
   const options = { ...DefaultOptions, ..._options };
-  const browser = await puppeteer.launch({
-    channel: "chrome",
-    headless: true,
-    defaultViewport: {
-      width: 1920,
-      height: 1080,
-    },
-  });
-
-  const page = await browser.newPage();
-  const ua = await browser.userAgent();
-  await page.setUserAgent(ua.replace("HeadlessChrome/", "Chrome/"));
 
   await page.goto(
     "https://weixin.sogou.com/weixin?ie=utf8&s_from=input&_sug_=n&_sug_type_=1&type=2&query=" +
@@ -107,19 +93,15 @@ export default async function sougouWeixin(
   if (options.resolveUrl) {
     for (const item of result.organic_results) {
       const { link, content } = await resolveSougouUrlAndContent(
-        browser,
-        ua,
+        page,
         item.link
       );
       item.link = link;
-
       if (options.fullContent) {
         item.full_content = content;
       }
     }
   }
-
-  await browser.close();
 
   return result;
 }

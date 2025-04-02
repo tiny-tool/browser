@@ -1,16 +1,14 @@
-import puppeteer, { Page, Browser } from "puppeteer";
+import { Page } from "puppeteer";
 import { OrganicResult } from "../define";
+import { getRedirectUrl } from "../common/get-redirect-url";
 
 async function resolveBaiduUrlAndContent(
-  browser: Browser,
-  ua: string,
+  page: Page,
   url: string
 ): Promise<{
   link: string;
   content: string;
 }> {
-  const page = await browser.newPage();
-  await page.setUserAgent(ua);
   try {
     await page.goto(url, { waitUntil: "networkidle0", timeout: 3000 });
   } catch (error) {}
@@ -18,7 +16,6 @@ async function resolveBaiduUrlAndContent(
   const content = await page.evaluate(() => {
     return document.documentElement.innerHTML;
   });
-  await page.close();
   return { link, content };
 }
 
@@ -71,6 +68,7 @@ const DefaultOptions = {
 };
 
 export default async function baidu(
+  page: Page,
   keyword: string,
   _options: {
     resolveUrl?: boolean;
@@ -78,17 +76,7 @@ export default async function baidu(
   }
 ) {
   const options = { ...DefaultOptions, ..._options };
-  const browser = await puppeteer.launch({
-    channel: "chrome",
-    headless: true,
-    defaultViewport: {
-      width: 1920,
-      height: 1080,
-    },
-  });
-  const page = await browser.newPage();
-  const ua = (await browser.userAgent()).replace("HeadlessChrome/", "Chrome/");
-  await page.setUserAgent(ua);
+
   await page.goto(
     "https://www.baidu.com/s?ie=UTF-8&wd=" + encodeURIComponent(keyword),
     {
@@ -104,20 +92,21 @@ export default async function baidu(
   result.organic_results = await extractOrganicResults(page);
 
   if (options.resolveUrl) {
-    for (const item of result.organic_results) {
-      const { link, content } = await resolveBaiduUrlAndContent(
-        browser,
-        ua,
-        item.link
-      );
-      item.link = link;
-
-      if (options.fullContent) {
+    if (options.fullContent) {
+      for (const item of result.organic_results) {
+        const { link, content } = await resolveBaiduUrlAndContent(
+          page,
+          item.link
+        );
+        item.link = link;
         item.full_content = content;
+      }
+    } else {
+      for (const item of result.organic_results) {
+        await getRedirectUrl(item.link);
       }
     }
   }
-  await browser.close();
 
   return result;
 }
