@@ -1,7 +1,7 @@
 import { Page } from "puppeteer";
 import fs from "fs";
 import { OrganicResult } from "../define";
-import { getRedirectUrl } from "../common/get-redirect-url";
+import { extractContent } from "../common/extractor-content";
 
 async function resolveSougouUrlAndContent(
   page: Page,
@@ -63,6 +63,7 @@ async function extractOrganicResults(page: Page): Promise<OrganicResult[]> {
 const DefaultOptions = {
   resolveUrl: true,
   fullContent: false,
+  limit: 10,
 };
 
 export default async function sougouWeixin(
@@ -71,6 +72,7 @@ export default async function sougouWeixin(
   _options: {
     resolveUrl?: boolean;
     fullContent?: boolean;
+    limit?: number;
   }
 ) {
   const options = { ...DefaultOptions, ..._options };
@@ -89,6 +91,9 @@ export default async function sougouWeixin(
   };
 
   result.organic_results = await extractOrganicResults(page);
+  if (options.limit) {
+    result.organic_results = result.organic_results.slice(0, options.limit);
+  }
 
   if (options.resolveUrl) {
     for (const item of result.organic_results) {
@@ -98,7 +103,7 @@ export default async function sougouWeixin(
       );
       item.link = link;
       if (options.fullContent) {
-        item.full_content = content;
+        item.full_content = await extractContent(content);
       }
     }
   }

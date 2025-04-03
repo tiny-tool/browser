@@ -1,6 +1,7 @@
 import { Page } from "puppeteer";
 import { OrganicResult } from "../define";
 import { getRedirectUrl } from "../common/get-redirect-url";
+import { extractContent } from "../common/extractor-content";
 
 async function resolveBaiduUrlAndContent(
   page: Page,
@@ -65,6 +66,7 @@ async function extractOrganicResults(page: Page): Promise<OrganicResult[]> {
 const DefaultOptions = {
   resolveUrl: true,
   fullContent: false,
+  limit: 10,
 };
 
 export default async function baidu(
@@ -73,6 +75,7 @@ export default async function baidu(
   _options: {
     resolveUrl?: boolean;
     fullContent?: boolean;
+    limit?: number;
   }
 ) {
   const options = { ...DefaultOptions, ..._options };
@@ -90,6 +93,9 @@ export default async function baidu(
   };
 
   result.organic_results = await extractOrganicResults(page);
+  if (options.limit) {
+    result.organic_results = result.organic_results.slice(0, options.limit);
+  }
 
   if (options.resolveUrl) {
     if (options.fullContent) {
@@ -99,7 +105,7 @@ export default async function baidu(
           item.link
         );
         item.link = link;
-        item.full_content = content;
+        item.full_content = await extractContent(content);
       }
     } else {
       for (const item of result.organic_results) {
@@ -108,5 +114,6 @@ export default async function baidu(
     }
   }
 
+  console.log("baidu result", result);
   return result;
 }
