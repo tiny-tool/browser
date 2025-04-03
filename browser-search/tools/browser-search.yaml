@@ -1,0 +1,30 @@
+identity:
+  name: browser-search
+  author: muzea
+  label:
+    en_US: browser-search
+    zh_Hans: browser-search
+    pt_BR: browser-search
+description:
+  human:
+    en_US: search web content use local browser
+    zh_Hans: search web content use local browser
+    pt_BR: search web content use local browser
+  llm: search web content use local browser
+parameters:
+  - name: query
+    type: string
+    required: true
+    label:
+      en_US: Query string
+      zh_Hans: 查询语句
+      pt_BR: Query string
+    human_description:
+      en_US: search web content use local browser
+      zh_Hans: 要搜索的内容
+      pt_BR: search web content use local browser
+    llm_description: search web content use local browser
+    form: llm
+extra:
+  python:
+    source: tools/browser-search.py

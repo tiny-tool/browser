@@ -1,0 +1,17 @@
+identity:
+  author: muzea
+  name: browser-search
+  label:
+    en_US: browser-search
+    zh_Hans: browser-search
+    pt_BR: browser-search
+  description:
+    en_US: search web content use local browser
+    zh_Hans: search web content use local browser
+    pt_BR: search web content use local browser
+  icon: icon.svg
+tools:
+  - tools/browser-search.yaml
+extra:
+  python:
+    source: provider/browser-search.py
