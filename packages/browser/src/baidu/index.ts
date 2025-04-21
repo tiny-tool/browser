@@ -1,7 +1,7 @@
 import { Page } from 'puppeteer';
 import { OrganicResult, Result } from '../define';
 import { getRedirectUrl } from '../common/get-redirect-url';
-import { extractContent } from '../common/extractor-content';
+import browser from '../browser';
 
 async function resolveBaiduUrlAndContent(
   page: Page,
@@ -10,13 +10,9 @@ async function resolveBaiduUrlAndContent(
   link: string;
   content: string;
 }> {
-  try {
-    await page.goto(url, { waitUntil: 'networkidle0', timeout: 3000 });
-  } catch (error) {}
+  const content = await browser(page, url);
   const link = page.url();
-  const content = await page.evaluate(() => {
-    return document.documentElement.innerHTML;
-  });
+
   return { link, content };
 }
 
@@ -78,7 +74,7 @@ export default async function baidu(
 ): Promise<Result> {
   const options = { ...DefaultOptions, ..._options };
 
-  await page.goto('https://www.baidu.com/s?ie=UTF-8&wd=' + encodeURIComponent(keyword), {
+  await page.goto('https://www.baidu.com/s?wd=' + encodeURIComponent(keyword), {
     waitUntil: 'networkidle0',
     timeout: 10000,
   });
@@ -97,7 +93,7 @@ export default async function baidu(
       for (const item of result.organic_results) {
         const { link, content } = await resolveBaiduUrlAndContent(page, item.link);
         item.link = link;
-        item.full_content = await extractContent(content);
+        item.full_content = content;
       }
     } else {
       for (const item of result.organic_results) {

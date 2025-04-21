@@ -22,7 +22,7 @@ export class SearchAgent {
   private async init() {
     this._browser = await puppeteer.launch({
       channel: 'chrome',
-      headless: true,
+      headless: false,
       defaultViewport: {
         width: 1920,
         height: 1080,

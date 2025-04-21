@@ -1,4 +1,4 @@
-import { SearchAgent } from '../src/search-agent';
+import { SearchAgent } from '../search-agent';
 
 async function testSougouWeixin() {
   const agent = new SearchAgent();

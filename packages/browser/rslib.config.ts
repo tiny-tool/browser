@@ -16,6 +16,8 @@ export default defineConfig({
     entry: {
       app: './src/app.ts',
       agent: './src/search-agent.ts',
+      testBrowser: './src/test/browser.ts',
+      testExtractContent: './src/test/extract-content.ts',
     },
   },
 });
