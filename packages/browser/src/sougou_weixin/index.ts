@@ -1,17 +1,17 @@
-import { Page } from "puppeteer";
-import fs from "fs";
-import { OrganicResult } from "../define";
-import { extractContent } from "../common/extractor-content";
+import { Page } from 'puppeteer';
+import fs from 'fs';
+import { OrganicResult, Result } from '../define';
+import { extractContent } from '../common/extractor-content';
 
 async function resolveSougouUrlAndContent(
   page: Page,
-  url: string
+  url: string,
 ): Promise<{
   link: string;
   content: string;
 }> {
   try {
-    await page.goto(url, { waitUntil: "networkidle0", timeout: 3000 });
+    await page.goto(url, { waitUntil: 'networkidle0', timeout: 3000 });
   } catch (error) {}
   const link = page.url();
   const content = await page.content();
@@ -19,8 +19,8 @@ async function resolveSougouUrlAndContent(
 }
 
 async function extractOrganicResults(page: Page): Promise<OrganicResult[]> {
-  fs.writeFileSync("sougou.html", await page.content());
-  const resultList = await page.$$(".news-list li");
+  fs.writeFileSync('sougou.html', await page.content());
+  const resultList = await page.$$('.news-list li');
 
   const ret: OrganicResult[] = [];
 
@@ -28,7 +28,7 @@ async function extractOrganicResults(page: Page): Promise<OrganicResult[]> {
   for (const el of resultList) {
     pos++;
     let currentPosition = pos;
-    const title = await el.$(".txt-box h3 a");
+    const title = await el.$('.txt-box h3 a');
     if (!title) {
       continue;
     }
@@ -37,23 +37,21 @@ async function extractOrganicResults(page: Page): Promise<OrganicResult[]> {
       continue;
     }
 
-    const site = await el.$(".s-p .all-time-y2");
-    const siteContent = site ? await site.evaluate((el) => el.textContent) : "";
+    const site = await el.$('.s-p .all-time-y2');
+    const siteContent = site ? await site.evaluate((el) => el.textContent) : '';
 
     const linkContent = await title.evaluate((el) => el.href);
 
-    const content = (await el.$("p.txt-info"))!;
-    const contentContent = content
-      ? await content.evaluate((el) => el.textContent)
-      : "";
+    const content = (await el.$('p.txt-info'))!;
+    const contentContent = content ? await content.evaluate((el) => el.textContent) : '';
 
     ret.push({
-      title: titleContent || "",
-      displayed_link: siteContent || "",
-      link: linkContent || "",
-      snippet: contentContent || "",
+      title: titleContent || '',
+      displayed_link: siteContent || '',
+      link: linkContent || '',
+      snippet: contentContent || '',
       position: currentPosition,
-      full_content: "",
+      full_content: '',
     });
   }
 
@@ -73,18 +71,14 @@ export default async function sougouWeixin(
     resolveUrl?: boolean;
     fullContent?: boolean;
     limit?: number;
-  }
-) {
+  },
+): Promise<Result> {
   const options = { ...DefaultOptions, ..._options };
 
-  await page.goto(
-    "https://weixin.sogou.com/weixin?ie=utf8&s_from=input&_sug_=n&_sug_type_=1&type=2&query=" +
-      encodeURIComponent(keyword),
-    {
-      waitUntil: "networkidle0",
-      timeout: 10000,
-    }
-  );
+  await page.goto('https://weixin.sogou.com/weixin?ie=utf8&s_from=input&_sug_=n&_sug_type_=1&type=2&query=' + encodeURIComponent(keyword), {
+    waitUntil: 'networkidle0',
+    timeout: 10000,
+  });
 
   const result = {
     organic_results: [] as OrganicResult[],
@@ -97,10 +91,7 @@ export default async function sougouWeixin(
 
   if (options.resolveUrl) {
     for (const item of result.organic_results) {
-      const { link, content } = await resolveSougouUrlAndContent(
-        page,
-        item.link
-      );
+      const { link, content } = await resolveSougouUrlAndContent(page, item.link);
       item.link = link;
       if (options.fullContent) {
         item.full_content = await extractContent(content);

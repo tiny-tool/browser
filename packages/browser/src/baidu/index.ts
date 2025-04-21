@@ -1,17 +1,17 @@
-import { Page } from "puppeteer";
-import { OrganicResult } from "../define";
-import { getRedirectUrl } from "../common/get-redirect-url";
-import { extractContent } from "../common/extractor-content";
+import { Page } from 'puppeteer';
+import { OrganicResult, Result } from '../define';
+import { getRedirectUrl } from '../common/get-redirect-url';
+import { extractContent } from '../common/extractor-content';
 
 async function resolveBaiduUrlAndContent(
   page: Page,
-  url: string
+  url: string,
 ): Promise<{
   link: string;
   content: string;
 }> {
   try {
-    await page.goto(url, { waitUntil: "networkidle0", timeout: 3000 });
+    await page.goto(url, { waitUntil: 'networkidle0', timeout: 3000 });
   } catch (error) {}
   const link = page.url();
   const content = await page.evaluate(() => {
@@ -21,7 +21,7 @@ async function resolveBaiduUrlAndContent(
 }
 
 async function extractOrganicResults(page: Page): Promise<OrganicResult[]> {
-  const resultList = await page.$$(".result.c-container.new-pmd");
+  const resultList = await page.$$('.result.c-container.new-pmd');
 
   const ret: OrganicResult[] = [];
 
@@ -29,7 +29,7 @@ async function extractOrganicResults(page: Page): Promise<OrganicResult[]> {
   for (const el of resultList) {
     pos++;
     let currentPosition = pos;
-    const title = await el.$(".c-title");
+    const title = await el.$('.c-title');
     if (!title) {
       continue;
     }
@@ -40,23 +40,21 @@ async function extractOrganicResults(page: Page): Promise<OrganicResult[]> {
 
     // const site = await el.$('div[class^="source_"] a[class^="siteLink_"]');
     const site = await el.$('a[class^="siteLink_"]');
-    const siteContent = site ? await site.evaluate((el) => el.textContent) : "";
+    const siteContent = site ? await site.evaluate((el) => el.textContent) : '';
 
-    const link = (await el.$(".c-title a"))!;
+    const link = (await el.$('.c-title a'))!;
     const linkContent = await link.evaluate((el) => el.href);
 
     const content = (await el.$('span[class^="content-right"]'))!;
-    const contentContent = content
-      ? await content.evaluate((el) => el.textContent)
-      : "";
+    const contentContent = content ? await content.evaluate((el) => el.textContent) : '';
 
     ret.push({
-      title: titleContent || "",
-      displayed_link: siteContent || "",
-      link: linkContent || "",
-      snippet: contentContent || "",
+      title: titleContent || '',
+      displayed_link: siteContent || '',
+      link: linkContent || '',
+      snippet: contentContent || '',
       position: currentPosition,
-      full_content: "",
+      full_content: '',
     });
   }
 
@@ -76,19 +74,16 @@ export default async function baidu(
     resolveUrl?: boolean;
     fullContent?: boolean;
     limit?: number;
-  }
-) {
+  },
+): Promise<Result> {
   const options = { ...DefaultOptions, ..._options };
 
-  await page.goto(
-    "https://www.baidu.com/s?ie=UTF-8&wd=" + encodeURIComponent(keyword),
-    {
-      waitUntil: "networkidle0",
-      timeout: 10000,
-    }
-  );
+  await page.goto('https://www.baidu.com/s?ie=UTF-8&wd=' + encodeURIComponent(keyword), {
+    waitUntil: 'networkidle0',
+    timeout: 10000,
+  });
 
-  const result = {
+  const result: Result = {
     organic_results: [] as OrganicResult[],
   };
 
@@ -100,10 +95,7 @@ export default async function baidu(
   if (options.resolveUrl) {
     if (options.fullContent) {
       for (const item of result.organic_results) {
-        const { link, content } = await resolveBaiduUrlAndContent(
-          page,
-          item.link
-        );
+        const { link, content } = await resolveBaiduUrlAndContent(page, item.link);
         item.link = link;
         item.full_content = await extractContent(content);
       }
@@ -114,6 +106,6 @@ export default async function baidu(
     }
   }
 
-  console.log("baidu result", result);
+  console.log('baidu result', result);
   return result;
 }

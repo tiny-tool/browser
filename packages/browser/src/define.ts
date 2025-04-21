@@ -13,3 +13,7 @@ export interface OrganicResult {
   // 完整 html 数据
   full_content: string;
 }
+
+export interface Result {
+  organic_results: OrganicResult[];
+}

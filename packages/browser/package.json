@@ -1,0 +1,36 @@
+{
+  "name": "@tiny-tool/browser",
+  "scripts": {
+    "build": "rslib build",
+    "build:watch": "rslib build --watch"
+  },
+  "main": "./dist/app.js",
+  "module": "./dist/app.mjs",
+  "types": "./dist/app.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/app.js",
+      "import": "./dist/app.mjs",
+      "types": "./dist/app.d.ts"
+    },
+    "./agent": {
+      "require": "./dist/agent.js",
+      "import": "./dist/agent.mjs",
+      "types": "./dist/search-agent.d.ts"
+    }
+  },
+  "keywords": [],
+  "author": "muzea (http://github.com/muzea)",
+  "license": "MIT",
+  "dependencies": {
+    "@extractus/article-extractor": "^8.0.17",
+    "@types/express": "^5.0.1",
+    "express": "5",
+    "puppeteer": "^24.4.0",
+    "rehype-parse": "^9.0.1",
+    "rehype-remark": "^10.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-stringify": "^11.0.0",
+    "unified": "^11.0.5"
+  }
+}

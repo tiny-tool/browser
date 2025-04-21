@@ -1,5 +1,5 @@
 import express from "express";
-import { SearchAgent } from "./search";
+import { SearchAgent } from "./search-agent";
 
 const app = express();
 const port = 3000;
