@@ -1,6 +1,6 @@
 {
   "name": "@tiny-tool/browser-mcp",
-  "version": "2.0.0",
+  "version": "1.0.0-beta.1",
   "bin": "dist/index.js",
   "repository": {
     "url": "https://github.com/tiny-tool/browser"
@@ -15,10 +15,12 @@
     "@modelcontextprotocol/sdk": "^1.9.0",
     "@tiny-tool/browser": "workspace:*",
     "express": "^5.1.0",
+    "yargs": "^17.7.2",
     "zod": "^3.24.3",
     "zod-to-json-schema": "^3.24.5"
   },
   "devDependencies": {
-    "@types/express": "^5.0.1"
+    "@types/express": "^5.0.1",
+    "@types/yargs": "^17.0.33"
   }
 }
