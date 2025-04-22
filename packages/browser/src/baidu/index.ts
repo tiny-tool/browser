@@ -1,4 +1,4 @@
-import { Page } from 'puppeteer';
+import { Page } from 'puppeteer-core';
 import { OrganicResult, Result } from '../define';
 import { getRedirectUrl } from '../common/get-redirect-url';
 import browser from '../browser';
@@ -74,10 +74,12 @@ export default async function baidu(
 ): Promise<Result> {
   const options = { ...DefaultOptions, ..._options };
 
-  await page.goto('https://www.baidu.com/s?wd=' + encodeURIComponent(keyword), {
-    waitUntil: 'networkidle0',
-    timeout: 10000,
-  });
+  try {
+    await page.goto('https://www.baidu.com/s?wd=' + encodeURIComponent(keyword), {
+      waitUntil: 'networkidle0',
+      timeout: 10000,
+    });
+  } catch (error) {}
 
   const result: Result = {
     organic_results: [] as OrganicResult[],
@@ -102,6 +104,5 @@ export default async function baidu(
     }
   }
 
-  console.log('baidu result', result);
   return result;
 }

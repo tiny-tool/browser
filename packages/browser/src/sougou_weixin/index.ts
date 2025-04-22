@@ -1,4 +1,4 @@
-import { Page } from 'puppeteer';
+import { Page } from 'puppeteer-core';
 import fs from 'fs';
 import { OrganicResult, Result } from '../define';
 import { extractContent } from '../common/extractor-content';

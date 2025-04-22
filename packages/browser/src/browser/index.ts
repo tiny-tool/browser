@@ -1,12 +1,13 @@
-import { Page } from 'puppeteer';
+import { Page } from 'puppeteer-core';
 import { extractContent } from '../common/extractor-content';
-import fs from 'fs';
 
 export default async function browser(page: Page, url: string): Promise<string> {
-  await page.goto(url, {
-    waitUntil: 'networkidle0',
-    timeout: 10000,
-  });
+  try {
+    await page.goto(url, {
+      waitUntil: 'networkidle0',
+      timeout: 10000,
+    });
+  } catch (error) {}
 
   const content = await page.evaluate(() => {
     function isInvisible(el: Element) {
@@ -30,7 +31,6 @@ export default async function browser(page: Page, url: string): Promise<string> 
     return document.documentElement.innerHTML;
   });
 
-  fs.writeFileSync('content.html', content, 'utf-8');
   const result = await extractContent(content);
   return result;
 }

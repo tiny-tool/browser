@@ -1,4 +1,4 @@
-import puppeteer, { Browser } from 'puppeteer';
+import puppeteer, { Browser } from 'puppeteer-core';
 
 import baidu from './baidu';
 import sougouWeixin from './sougou_weixin';

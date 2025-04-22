@@ -61,7 +61,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const parsed = BrowserSchema.safeParse(args);
         const content = await agent.browser(parsed.data?.url!);
 
-        console.log('Browser tool invoked with URL:', parsed.data?.url, content);
         return {
           content: [{ type: 'text', text: content }],
         };
@@ -70,18 +69,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const parsed = SearchSchema.safeParse(args);
         const result = await agent.search('baidu', parsed.data?.keyword!, { fullContent: true, limit: 1 });
 
-        console.log('Search tool invoked with keyword:', parsed.data?.keyword, result);
         return {
-          content: result.organic_results
-            .map((item) => {
-              return { type: 'text', text: `${item.full_content}` };
-            })
-            .concat([
-              {
-                type: 'text',
-                text: `以上是用户关键词的搜索结果，格式为 Markdown，从中总结用户想要的信息`,
-              },
-            ]),
+          content: result.organic_results.map((item) => {
+            return { type: 'text', text: `${item.full_content}` };
+          }),
         };
       }
 
