@@ -22,5 +22,11 @@
   "devDependencies": {
     "@types/express": "^5.0.1",
     "@types/yargs": "^17.0.33"
+  },
+  "files": [
+    "dist/*"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }
