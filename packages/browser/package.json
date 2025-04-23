@@ -24,11 +24,12 @@
   "author": "muzea (http://github.com/muzea)",
   "license": "MIT",
   "dependencies": {
+    "@ghostery/adblocker-puppeteer": "^2.5.1",
     "@types/express": "^5.0.1",
     "express": "5",
     "hastscript": "^9.0.1",
     "jsdom": "^26.1.0",
-    "puppeteer-core": "^24.6.1",
+    "puppeteer-core": "24.7.1",
     "rehype-parse": "^9.0.1",
     "rehype-remark": "^10.0.1",
     "rehype-remove-comments": "^6.1.1",
@@ -42,6 +43,12 @@
     "@types/hast": "^3.0.4",
     "@types/jsdom": "^21.1.7",
     "hast": "^1.0.0"
+  },
+  "overrides": {
+    "puppeteer": "npm:puppeteer-core@24.7.1"
+  },
+  "resolutions": {
+    "puppeteer": "npm:puppeteer-core@24.7.1"
   },
   "files": [
     "dist/*"

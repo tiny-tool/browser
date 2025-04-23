@@ -1,16 +1,26 @@
 export interface OrganicResult {
-  // 标题
+  /**
+   * 标题
+   */
   title: string;
-  // 站点名称
+  /**
+   * 站点名称
+   */
   displayed_link: string;
-  // 连接
+  /**
+   * 链接
+   */
   link: string;
-  // 内容
+  /**
+   * 在搜索结果页上展示出来的内容
+   */
   snippet: string;
 
   position: number;
 
-  // 完整 html 数据
+  /**
+   * 完整 html 数据
+   */
   full_content: string;
 }
 

@@ -6,11 +6,14 @@ import browser from '../browser';
 async function resolveBaiduUrlAndContent(
   page: Page,
   url: string,
+  options: {
+    removeInvisibleElements: boolean;
+  },
 ): Promise<{
   link: string;
   content: string;
 }> {
-  const content = await browser(page, url);
+  const content = await browser(page, url, options);
   const link = page.url();
 
   return { link, content };
@@ -61,6 +64,7 @@ const DefaultOptions = {
   resolveUrl: true,
   fullContent: false,
   limit: 10,
+  removeInvisibleElements: true,
 };
 
 export default async function baidu(
@@ -70,6 +74,7 @@ export default async function baidu(
     resolveUrl?: boolean;
     fullContent?: boolean;
     limit?: number;
+    removeInvisibleElements?: boolean;
   },
 ): Promise<Result> {
   const options = { ...DefaultOptions, ..._options };
@@ -93,7 +98,9 @@ export default async function baidu(
   if (options.resolveUrl) {
     if (options.fullContent) {
       for (const item of result.organic_results) {
-        const { link, content } = await resolveBaiduUrlAndContent(page, item.link);
+        const { link, content } = await resolveBaiduUrlAndContent(page, item.link, {
+          removeInvisibleElements: options.removeInvisibleElements,
+        });
         item.link = link;
         item.full_content = content;
       }

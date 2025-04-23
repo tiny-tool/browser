@@ -66,11 +66,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
       case 'search': {
         const parsed = SearchSchema.safeParse(args);
-        const result = await agent.search('baidu', parsed.data?.keyword!, { fullContent: true, limit: 1 });
+        const result = await agent.search('baidu', parsed.data?.keyword!, { fullContent: true, limit: 1, removeInvisibleElements: false });
 
         return {
           content: result.organic_results.map((item) => {
-            return { type: 'text', text: `${item.full_content}` };
+            return {
+              type: 'text',
+              text: item.full_content,
+            };
           }),
         };
       }

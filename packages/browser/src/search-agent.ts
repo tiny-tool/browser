@@ -1,5 +1,6 @@
 import puppeteer, { Browser } from 'puppeteer-core';
-
+import { fullLists, PuppeteerBlocker } from '@ghostery/adblocker-puppeteer';
+import fs from 'node:fs/promises';
 import baidu from './baidu';
 import sougouWeixin from './sougou_weixin';
 import browser from './browser';
@@ -11,11 +12,20 @@ export interface SearchOptions {
   resolveUrl?: boolean;
   fullContent?: boolean;
   limit?: number;
+
+  /**
+   * 移除不可见元素
+   */
+  removeInvisibleElements?: boolean;
 }
 
 export interface AgentConfig {
   headless?: boolean;
 }
+
+const DefalutConfig: AgentConfig = {
+  headless: true,
+};
 
 export class SearchAgent {
   // @ts-ignore
@@ -23,10 +33,12 @@ export class SearchAgent {
   _browserInited: Promise<void>;
   // @ts-ignore
   _browserInitCallback: Function;
+  // @ts-ignore
+  _blocker: PuppeteerBlocker;
   config: AgentConfig;
   baiduInited = false;
-  constructor(config: AgentConfig = { headless: true }) {
-    this.config = config;
+  constructor(config: AgentConfig = {}) {
+    this.config = Object.assign({}, DefalutConfig, config);
     this._browserInited = new Promise((resolve) => {
       this._browserInitCallback = resolve;
     });
@@ -42,12 +54,30 @@ export class SearchAgent {
       },
     });
     this._browserInitCallback();
+
+    this._blocker = await PuppeteerBlocker.fromLists(
+      fetch,
+      fullLists,
+      {
+        enableCompression: true,
+      },
+      {
+        path: './dist/engine.bin',
+        read: fs.readFile,
+        write: fs.writeFile,
+      },
+    );
   }
   private async getPage() {
     await this._browserInited;
     const page = await this._browser.newPage();
     const ua = (await this._browser.userAgent()).replace('HeadlessChrome/', 'Chrome/');
     await page.setUserAgent(ua);
+
+    if (this._blocker) {
+      // @ts-ignore
+      await this._blocker.enableBlockingInPage(page);
+    }
 
     return page;
   }
@@ -108,7 +138,7 @@ export class SearchAgent {
 
   public async browser(url: string): Promise<string> {
     const page = await this.getPage();
-    const content = await browser(page, url);
+    const content = await browser(page, url, { removeInvisibleElements: false });
     page.close();
     return content;
   }

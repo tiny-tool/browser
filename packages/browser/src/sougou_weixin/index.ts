@@ -1,7 +1,8 @@
 import { Page } from 'puppeteer-core';
 import fs from 'fs';
 import { OrganicResult, Result } from '../define';
-import { extractContent } from '../common/extractor-content';
+import browser from '../browser';
+import { getRedirectUrl } from '../common/get-redirect-url';
 
 async function resolveSougouUrlAndContent(
   page: Page,
@@ -10,11 +11,9 @@ async function resolveSougouUrlAndContent(
   link: string;
   content: string;
 }> {
-  try {
-    await page.goto(url, { waitUntil: 'networkidle0', timeout: 3000 });
-  } catch (error) {}
+  const content = await browser(page, url, { removeInvisibleElements: true });
   const link = page.url();
-  const content = await page.content();
+
   return { link, content };
 }
 
@@ -91,10 +90,13 @@ export default async function sougouWeixin(
 
   if (options.resolveUrl) {
     for (const item of result.organic_results) {
-      const { link, content } = await resolveSougouUrlAndContent(page, item.link);
-      item.link = link;
       if (options.fullContent) {
-        item.full_content = await extractContent(content);
+        const { link, content } = await resolveSougouUrlAndContent(page, item.link);
+        item.link = link;
+        item.full_content = content;
+      } else {
+        const redirectUrl = await getRedirectUrl(item.link);
+        item.link = redirectUrl;
       }
     }
   }

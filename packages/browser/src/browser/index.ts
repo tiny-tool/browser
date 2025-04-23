@@ -1,7 +1,7 @@
 import { Page } from 'puppeteer-core';
 import { extractContent } from '../common/extractor-content';
 
-export default async function browser(page: Page, url: string): Promise<string> {
+export default async function browser(page: Page, url: string, options: { removeInvisibleElements: boolean }): Promise<string> {
   try {
     await page.goto(url, {
       waitUntil: 'networkidle0',
@@ -9,7 +9,7 @@ export default async function browser(page: Page, url: string): Promise<string> 
     });
   } catch (error) {}
 
-  const content = await page.evaluate(() => {
+  const content = await page.evaluate((options) => {
     function isInvisible(el: Element) {
       const style = window.getComputedStyle(el);
       const rect = el.getBoundingClientRect();
@@ -26,10 +26,12 @@ export default async function browser(page: Page, url: string): Promise<string> 
       });
     }
 
-    removeInvisibleElements();
+    if (options.removeInvisibleElements) {
+      removeInvisibleElements();
+    }
 
     return document.documentElement.innerHTML;
-  });
+  }, options);
 
   const result = await extractContent(content);
   return result;
