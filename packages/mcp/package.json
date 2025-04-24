@@ -1,6 +1,6 @@
 {
   "name": "@tiny-tool/browser-mcp",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "bin": "dist/index.js",
   "repository": {
     "url": "https://github.com/tiny-tool/browser"
@@ -9,7 +9,7 @@
     "build": "rslib build",
     "build:watch": "rslib build --watch"
   },
-  "author": "muzea <mr.muzea@gmail.com>",
+  "author": "muzea (http://github.com/muzea)",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.9.0",
@@ -33,6 +33,7 @@
     "dist/*"
   ],
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   }
 }
