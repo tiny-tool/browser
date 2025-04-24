@@ -1,6 +1,9 @@
 {
   "name": "@tiny-tool/browser",
   "version": "1.0.0-beta.2",
+  "repository": {
+    "url": "https://github.com/tiny-tool/browser"
+  },
   "scripts": {
     "build": "rslib build",
     "build:watch": "rslib build --watch"
