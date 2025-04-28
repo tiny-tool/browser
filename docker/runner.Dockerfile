@@ -1,11 +1,10 @@
 FROM node:22-bookworm
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
-COPY runner /app
+ARG PKG_VER
 WORKDIR /app
 
-
+RUN corepack enable
 RUN apt-get update \
     && apt-get install -y wget gnupg \
     && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
@@ -15,16 +14,16 @@ RUN apt-get update \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-RUN corepack prepare pnpm@9.15.9 --activate && pnpm install --no-cache && pnpm build
-
-
 RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
     && chown -R pptruser:pptruser /app \
     && chown -R pptruser:pptruser /app \
     && chown -R pptruser:pptruser /app \
     && chown -R pptruser:pptruser /app
 
+RUN corepack prepare pnpm@9.15.9 --activate
+RUN pnpm add -g @tiny-tool/browser-mcp@${PKG_VER}
+
 USER pptruser
 EXPOSE 3000
 
-CMD [ "node", "/app/dist/app.js" ]
+CMD [ "@tiny-tool/browser-mcp", "-t", "sse" ]
