@@ -12,7 +12,7 @@ const args = yargs(hideBin(process.argv))
   .option('port', {
     alias: 'p',
     type: 'number',
-    default: 3002,
+    default: 3000,
     description: 'Specify the port for the server',
   })
   .option('disableHeadless', {

@@ -26,4 +26,4 @@ RUN pnpm add -g @tiny-tool/browser-mcp@${PKG_VER}
 USER pptruser
 EXPOSE 3000
 
-CMD [ "@tiny-tool/browser-mcp", "-t", "sse" ]
+CMD [ "/pnpm/browser-mcp", "-t", "streamable" ]
