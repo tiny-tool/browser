@@ -1,6 +1,6 @@
 {
   "name": "@tiny-tool/browser-mcp",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "bin": "dist/index.js",
   "repository": {
     "url": "https://github.com/tiny-tool/browser"

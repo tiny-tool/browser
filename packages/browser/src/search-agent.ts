@@ -1,6 +1,7 @@
 import puppeteer, { Browser } from 'puppeteer-core';
 import { fullLists, PuppeteerBlocker } from '@ghostery/adblocker-puppeteer';
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import baidu from './baidu';
 import sougouWeixin from './sougou_weixin';
 import browser from './browser';
@@ -26,6 +27,24 @@ export interface AgentConfig {
 const DefalutConfig: AgentConfig = {
   headless: true,
 };
+
+async function checkFileExists(fpath: string) {
+  try {
+    await fs.access(fpath, fs.constants.F_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function ensureAdblockPath() {
+  if (await checkFileExists('dist')) {
+    return path.join('.', 'dist', 'adblock.bin');
+  }
+  await fs.mkdir('node_modules', { recursive: true });
+
+  return path.join('.', 'node_modules', 'adblock.bin');
+}
 
 export class SearchAgent {
   // @ts-ignore
@@ -62,7 +81,7 @@ export class SearchAgent {
         enableCompression: true,
       },
       {
-        path: './dist/engine.bin',
+        path: await ensureAdblockPath(),
         read: fs.readFile,
         write: fs.writeFile,
       },
