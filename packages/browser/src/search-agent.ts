@@ -6,6 +6,7 @@ import baidu from './baidu';
 import sougouWeixin from './sougou_weixin';
 import browser from './browser';
 import { Result } from './define';
+import { EventType, Logger } from './logs';
 
 const TODOCache = new Map<string, Result>();
 
@@ -54,6 +55,8 @@ export class SearchAgent {
   _browserInitCallback: Function;
   // @ts-ignore
   _blocker: PuppeteerBlocker;
+  // @ts-ignore
+  _logger: Logger;
   config: AgentConfig;
   baiduInited = false;
   constructor(config: AgentConfig = {}) {
@@ -64,6 +67,9 @@ export class SearchAgent {
     this.init();
   }
   private async init() {
+    this._logger = new Logger();
+    await this._logger.init('logs');
+
     this._browser = await puppeteer.launch({
       channel: 'chrome',
       headless: this.config.headless,
@@ -130,6 +136,16 @@ export class SearchAgent {
   }
 
   public async search(engine: string, q: string, options: SearchOptions): Promise<Result> {
+    await this._browserInited;
+    this._logger.event({
+      event: EventType.SEARCH,
+      content: JSON.stringify({
+        engine,
+        q,
+        options,
+      }),
+    });
+
     const cacheKey = `${engine}_${q}`;
 
     if (TODOCache.has(cacheKey)) {

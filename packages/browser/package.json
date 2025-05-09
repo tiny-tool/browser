@@ -29,9 +29,11 @@
   "dependencies": {
     "@ghostery/adblocker-puppeteer": "^2.5.1",
     "@types/express": "^5.0.1",
+    "better-sqlite3": "^11.10.0",
     "express": "5",
     "hastscript": "^9.0.1",
     "jsdom": "^26.1.0",
+    "knex": "^3.1.0",
     "puppeteer-core": "24.7.1",
     "rehype-parse": "^9.0.1",
     "rehype-remark": "^10.0.1",
