@@ -1,11 +1,8 @@
 lockfileVersion: '9.0'
 
 settings:
-  autoInstallPeers: true
+  autoInstallPeers: false
   excludeLinksFromLockfile: false
-
-overrides:
-  puppeteer: puppeteer-core@24.7.1
 
 importers:
 
@@ -207,7 +204,7 @@ packages:
   '@ghostery/adblocker-puppeteer@2.5.1':
     resolution: {integrity: sha512-K9v8LzUkUBmV51vYeBH9EcmIBABpq4fd6Yi+iEZYQdqzDTYsr4z/yKbuD3wN5s2QVZycLoeWBeaUwVZlAgnlrQ==}
     peerDependencies:
-      puppeteer: puppeteer-core@24.7.1
+      puppeteer: '>5'
 
   '@ghostery/adblocker@2.5.1':
     resolution: {integrity: sha512-/sSSVLwb3ojIFw0owwffsGdCDOeMI02L/nXFIJD2exRAwG8hOETYwCGO7KwSyH2bnVTHtnIQYD1+hfeqQN+I5A==}

@@ -23,12 +23,6 @@
     "@types/express": "^5.0.1",
     "@types/yargs": "^17.0.33"
   },
-  "overrides": {
-    "puppeteer": "npm:puppeteer-core@24.7.1"
-  },
-  "resolutions": {
-    "puppeteer": "npm:puppeteer-core@24.7.1"
-  },
   "files": [
     "dist/*"
   ],
