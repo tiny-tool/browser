@@ -5,13 +5,16 @@ import Knex from 'knex';
 export interface Event {
   id: number;
   event: string;
-  request_id: string;
+  session_id: string;
   content: string;
   context: string;
 }
 
 export enum EventType {
   SEARCH = 'search',
+  BROWSER = 'browser',
+  SEARCH_RESULT = 'search_result',
+  PAGE_CONTENT = 'page_content',
 }
 
 export class Logger {
@@ -52,4 +55,18 @@ export class Logger {
   async event(data: Partial<Event>) {
     await this._knex('events').insert(data);
   }
+
+  createContext(sessionId: string, defaultContext: any): LogContext {
+    const logger = this;
+    return {
+      event: async (data: Partial<Event>, context: any = {}) => {
+        const _context = JSON.stringify({ ...defaultContext, ...context });
+        await logger.event({ ...data, session_id: sessionId, context: _context });
+      },
+    };
+  }
+}
+
+export interface LogContext {
+  event(data: Partial<Event>, context?: any): Promise<void>;
 }

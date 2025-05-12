@@ -1,23 +1,8 @@
 import { Page } from 'puppeteer-core';
-import { OrganicResult, Result } from '../define';
+import { OrganicResult, Result, SearchOptions } from '../define';
 import { getRedirectUrl } from '../common/get-redirect-url';
-import browser from '../browser';
-
-async function resolveBaiduUrlAndContent(
-  page: Page,
-  url: string,
-  options: {
-    removeInvisibleElements: boolean;
-  },
-): Promise<{
-  link: string;
-  content: string;
-}> {
-  const content = await browser(page, url, options);
-  const link = page.url();
-
-  return { link, content };
-}
+import { EventType, LogContext } from '../logs';
+import { resolveUrlAndContent } from '../common/get-page-content';
 
 async function extractOrganicResults(page: Page): Promise<OrganicResult[]> {
   const resultList = await page.$$('.result.c-container.new-pmd');
@@ -60,23 +45,14 @@ async function extractOrganicResults(page: Page): Promise<OrganicResult[]> {
   return ret;
 }
 
-const DefaultOptions = {
+const DefaultOptions: SearchOptions = {
   resolveUrl: true,
   fullContent: false,
   limit: 10,
   removeInvisibleElements: true,
 };
 
-export default async function baidu(
-  page: Page,
-  keyword: string,
-  _options: {
-    resolveUrl?: boolean;
-    fullContent?: boolean;
-    limit?: number;
-    removeInvisibleElements?: boolean;
-  },
-): Promise<Result> {
+export default async function baidu(page: Page, keyword: string, _options: SearchOptions, logContext: LogContext): Promise<Result> {
   const options = { ...DefaultOptions, ..._options };
 
   try {
@@ -85,6 +61,17 @@ export default async function baidu(
       timeout: 10000,
     });
   } catch (error) {}
+
+  await logContext.event(
+    {
+      event: EventType.SEARCH_RESULT,
+      content: await page.content(),
+    },
+    {
+      url: page.url(),
+      options: options,
+    },
+  );
 
   const result: Result = {
     organic_results: [] as OrganicResult[],
@@ -98,9 +85,14 @@ export default async function baidu(
   if (options.resolveUrl) {
     if (options.fullContent) {
       for (const item of result.organic_results) {
-        const { link, content } = await resolveBaiduUrlAndContent(page, item.link, {
-          removeInvisibleElements: options.removeInvisibleElements,
-        });
+        const { link, content } = await resolveUrlAndContent(
+          page,
+          item.link,
+          {
+            removeInvisibleElements: options.removeInvisibleElements!,
+          },
+          logContext,
+        );
         item.link = link;
         item.full_content = content;
       }

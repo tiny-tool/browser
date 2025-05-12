@@ -51,14 +51,16 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 
 const agent = new SearchAgent({ headless: !args.disableHeadless });
 
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
   try {
     const { name, arguments: args } = request.params;
 
     switch (name) {
       case 'browser': {
         const parsed = BrowserSchema.safeParse(args);
-        const content = await agent.browser(parsed.data?.url!);
+        const content = await agent.browser(parsed.data?.url!, {
+          sessionId: extra.sessionId!,
+        });
 
         return {
           content: [{ type: 'text', text: content }],
@@ -66,7 +68,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
       case 'search': {
         const parsed = SearchSchema.safeParse(args);
-        const result = await agent.search('baidu', parsed.data?.keyword!, { fullContent: true, limit: 1, removeInvisibleElements: false });
+        const result = await agent.search(
+          'baidu',
+          parsed.data?.keyword!,
+          { fullContent: true, limit: 1, removeInvisibleElements: false },
+          {
+            sessionId: extra.sessionId!,
+          },
+        );
 
         return {
           content: result.organic_results.map((item) => {

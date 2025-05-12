@@ -1,24 +1,10 @@
 import { Page } from 'puppeteer-core';
-import fs from 'fs';
-import { OrganicResult, Result } from '../define';
-import browser from '../browser';
+import { OrganicResult, Result, SearchOptions } from '../define';
 import { getRedirectUrl } from '../common/get-redirect-url';
-
-async function resolveSougouUrlAndContent(
-  page: Page,
-  url: string,
-): Promise<{
-  link: string;
-  content: string;
-}> {
-  const content = await browser(page, url, { removeInvisibleElements: true });
-  const link = page.url();
-
-  return { link, content };
-}
+import { EventType, LogContext } from '../logs';
+import { resolveUrlAndContent } from '../common/get-page-content';
 
 async function extractOrganicResults(page: Page): Promise<OrganicResult[]> {
-  fs.writeFileSync('sougou.html', await page.content());
   const resultList = await page.$$('.news-list li');
 
   const ret: OrganicResult[] = [];
@@ -57,27 +43,33 @@ async function extractOrganicResults(page: Page): Promise<OrganicResult[]> {
   return ret;
 }
 
-const DefaultOptions = {
+const DefaultOptions: SearchOptions = {
   resolveUrl: true,
   fullContent: false,
   limit: 10,
+  removeInvisibleElements: true,
 };
 
-export default async function sougouWeixin(
-  page: Page,
-  keyword: string,
-  _options: {
-    resolveUrl?: boolean;
-    fullContent?: boolean;
-    limit?: number;
-  },
-): Promise<Result> {
+export default async function sougouWeixin(page: Page, keyword: string, _options: SearchOptions, logContext: LogContext): Promise<Result> {
   const options = { ...DefaultOptions, ..._options };
 
-  await page.goto('https://weixin.sogou.com/weixin?ie=utf8&s_from=input&_sug_=n&_sug_type_=1&type=2&query=' + encodeURIComponent(keyword), {
-    waitUntil: 'networkidle0',
-    timeout: 10000,
-  });
+  try {
+    await page.goto('https://weixin.sogou.com/weixin?ie=utf8&s_from=input&_sug_=n&_sug_type_=1&type=2&query=' + encodeURIComponent(keyword), {
+      waitUntil: 'networkidle0',
+      timeout: 10000,
+    });
+  } catch (error) {}
+
+  await logContext.event(
+    {
+      event: EventType.SEARCH_RESULT,
+      content: await page.content(),
+    },
+    {
+      url: page.url(),
+      options: options,
+    },
+  );
 
   const result = {
     organic_results: [] as OrganicResult[],
@@ -91,7 +83,14 @@ export default async function sougouWeixin(
   if (options.resolveUrl) {
     for (const item of result.organic_results) {
       if (options.fullContent) {
-        const { link, content } = await resolveSougouUrlAndContent(page, item.link);
+        const { link, content } = await resolveUrlAndContent(
+          page,
+          item.link,
+          {
+            removeInvisibleElements: options.removeInvisibleElements!,
+          },
+          logContext,
+        );
         item.link = link;
         item.full_content = content;
       } else {

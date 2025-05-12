@@ -1,13 +1,25 @@
 import { Page } from 'puppeteer-core';
 import { extractContent } from '../common/extractor-content';
+import { EventType, LogContext } from '../logs';
 
-export default async function browser(page: Page, url: string, options: { removeInvisibleElements: boolean }): Promise<string> {
+export default async function browser(page: Page, url: string, options: { removeInvisibleElements: boolean }, logContext: LogContext): Promise<string> {
   try {
     await page.goto(url, {
       waitUntil: 'networkidle0',
       timeout: 10000,
     });
   } catch (error) {}
+
+  await logContext.event(
+    {
+      event: EventType.PAGE_CONTENT,
+      content: await page.content(),
+    },
+    {
+      url: page.url(),
+      options: options,
+    },
+  );
 
   const content = await page.evaluate((options) => {
     function isInvisible(el: Element) {

@@ -5,21 +5,10 @@ import path from 'node:path';
 import baidu from './baidu';
 import sougouWeixin from './sougou_weixin';
 import browser from './browser';
-import { Result } from './define';
-import { EventType, Logger } from './logs';
+import { Result, SearchOptions } from './define';
+import { EventType, LogContext, Logger } from './logs';
 
 const TODOCache = new Map<string, Result>();
-
-export interface SearchOptions {
-  resolveUrl?: boolean;
-  fullContent?: boolean;
-  limit?: number;
-
-  /**
-   * 移除不可见元素
-   */
-  removeInvisibleElements?: boolean;
-}
 
 export interface AgentConfig {
   headless?: boolean;
@@ -45,6 +34,10 @@ async function ensureAdblockPath() {
   await fs.mkdir('node_modules', { recursive: true });
 
   return path.join('.', 'node_modules', 'adblock.bin');
+}
+
+interface SessionContext {
+  sessionId: string;
 }
 
 export class SearchAgent {
@@ -121,23 +114,29 @@ export class SearchAgent {
 
     this.baiduInited = true;
   }
-  private async baidu(q: string, options: SearchOptions) {
+  private async baidu(q: string, options: SearchOptions, logContext: LogContext) {
     await this.initBaidu();
     const page = await this.getPage();
-    const result = await baidu(page, decodeURIComponent(q as string), options);
+    const result = await baidu(page, decodeURIComponent(q as string), options, logContext);
     page.close();
     return result;
   }
-  private async sougouWeixin(q: string, options: SearchOptions) {
+  private async sougouWeixin(q: string, options: SearchOptions, logContext: LogContext) {
     const page = await this.getPage();
-    const result = await sougouWeixin(page, decodeURIComponent(q as string), options);
+    const result = await sougouWeixin(page, decodeURIComponent(q as string), options, logContext);
     page.close();
     return result;
   }
 
-  public async search(engine: string, q: string, options: SearchOptions): Promise<Result> {
+  public async search(engine: string, q: string, options: SearchOptions, context: SessionContext): Promise<Result> {
     await this._browserInited;
-    this._logger.event({
+    const logContext = this._logger.createContext(context.sessionId, {
+      engine,
+      q,
+      input_options: options,
+    });
+
+    logContext.event({
       event: EventType.SEARCH,
       content: JSON.stringify({
         engine,
@@ -155,11 +154,11 @@ export class SearchAgent {
     let result: Result;
     switch (engine) {
       case 'baidu': {
-        result = await this.baidu(q, options);
+        result = await this.baidu(q, options, logContext);
         break;
       }
       case 'sougou_weixin': {
-        result = await this.sougouWeixin(q, options);
+        result = await this.sougouWeixin(q, options, logContext);
         break;
       }
       default: {
@@ -171,9 +170,21 @@ export class SearchAgent {
     return result;
   }
 
-  public async browser(url: string): Promise<string> {
+  public async browser(url: string, context: SessionContext): Promise<string> {
     const page = await this.getPage();
-    const content = await browser(page, url, { removeInvisibleElements: false });
+
+    const logContext = this._logger.createContext(context.sessionId, {
+      url,
+    });
+
+    logContext.event({
+      event: EventType.BROWSER,
+      content: JSON.stringify({
+        url,
+      }),
+    });
+
+    const content = await browser(page, url, { removeInvisibleElements: false }, logContext);
     page.close();
     return content;
   }
