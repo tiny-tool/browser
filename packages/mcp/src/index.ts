@@ -1,22 +1,22 @@
 #!/usr/bin/env node
 
-import args from './args';
+import { parseArgs } from './args';
 import sse from './sse';
 import stdio from './stdio';
 import streamable from './streamable';
 
-switch (args.type) {
-  case 'sse':
-    sse({
-      port: args.port,
-    });
-    break;
-  case 'streamable':
-    streamable({
-      port: args.port,
-    });
-    break;
-  case 'stdio':
-    stdio();
-    break;
+async function main() {
+  const args = parseArgs();
+  switch (args.type) {
+    case 'sse':
+      sse(args.config, args.agentConfig);
+      break;
+    case 'streamable':
+      streamable(args.config, args.agentConfig);
+      break;
+    case 'stdio':
+      stdio(args.agentConfig);
+      break;
+  }
 }
+main();

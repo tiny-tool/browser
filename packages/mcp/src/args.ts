@@ -1,5 +1,6 @@
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
+import { AgentConfig } from '@tiny-tool/browser/agent';
 
 const args = yargs(hideBin(process.argv))
   .option('type', {
@@ -22,3 +23,21 @@ const args = yargs(hideBin(process.argv))
   .parseSync();
 
 export default args;
+
+export function parseArgs() {
+  const agentConfig: AgentConfig = {
+    headless: true,
+  };
+
+  if (args.disableHeadless) {
+    agentConfig.headless = false;
+  }
+
+  return {
+    type: args.type,
+    config: {
+      port: args.port,
+    },
+    agentConfig,
+  };
+}

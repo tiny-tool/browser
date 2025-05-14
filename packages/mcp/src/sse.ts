@@ -2,9 +2,12 @@
 
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import express from 'express';
-import server from './server';
+import { createServer } from './server';
+import { AgentConfig } from '@tiny-tool/browser/agent';
 
-export default async function (config: { port: number }) {
+export default async function (config: { port: number }, agentConfig: AgentConfig) {
+  const server = createServer(agentConfig);
+
   const connections = new Map<string, SSEServerTransport>();
 
   const app = express();

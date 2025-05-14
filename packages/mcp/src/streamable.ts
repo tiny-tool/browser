@@ -1,10 +1,13 @@
 import express from 'express';
 import { randomUUID } from 'node:crypto';
-import server from './server';
+import { createServer } from './server';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
+import { AgentConfig } from '@tiny-tool/browser/agent';
 
-export default async function (config: { port: number }) {
+export default async function (config: { port: number }, agentConfig: AgentConfig) {
+  const server = createServer(agentConfig);
+
   const app = express();
   app.use(express.json());
 
