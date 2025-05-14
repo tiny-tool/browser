@@ -7,7 +7,8 @@
   },
   "scripts": {
     "build": "rslib build",
-    "build:watch": "rslib build --watch"
+    "build:watch": "rslib build --watch",
+    "test:env": "browser_mcp_type=streamable browser_mcp_port=9090 node dist/index.js"
   },
   "author": "muzea (http://github.com/muzea)",
   "license": "MIT",
