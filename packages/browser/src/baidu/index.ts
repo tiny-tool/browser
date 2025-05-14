@@ -62,6 +62,10 @@ export default async function baidu(page: Page, keyword: string, _options: Searc
     });
   } catch (error) {}
 
+  const screenshotFile = await logContext.saveFile(async () => {
+    return page.screenshot({ type: 'webp', quality: 90 });
+  });
+
   await logContext.event(
     {
       event: EventType.SEARCH_RESULT,
@@ -70,6 +74,7 @@ export default async function baidu(page: Page, keyword: string, _options: Searc
     {
       url: page.url(),
       options: options,
+      screenshotFile,
     },
   );
 
