@@ -37,7 +37,7 @@ jobs:
             PKG_VER=${{ fromJson(env.PACKAGE_JSON).version }}
           push: true
           tags: |
-            woodenfish42/tiny-tool-browser-mcp:${{ fromJson(env.PACKAGE_JSON).version }}
+            tinytool/browser-mcp:${{ fromJson(env.PACKAGE_JSON).version }}
             ghcr.io/${{ github.repository }}
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v2
