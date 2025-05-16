@@ -6,16 +6,18 @@ import baidu from './baidu';
 import sougouWeixin from './sougou_weixin';
 import browser from './browser';
 import { Result, SearchOptions } from './define';
-import { EventType, LogContext, Logger } from './logs';
+import { EventType, LogContext, Logger, LoggerFake } from './logs';
 
 const TODOCache = new Map<string, Result>();
 
 export interface AgentConfig {
   headless?: boolean;
+  log?: string | false;
 }
 
 const DefalutConfig: AgentConfig = {
   headless: true,
+  log: 'logs',
 };
 
 async function checkFileExists(fpath: string) {
@@ -60,7 +62,11 @@ export class SearchAgent {
     this.init();
   }
   private async init() {
-    this._logger = new Logger();
+    if (this.config.log) {
+      this._logger = new Logger();
+    } else {
+      this._logger = new LoggerFake();
+    }
     await this._logger.init('logs');
 
     this._browser = await puppeteer.launch({

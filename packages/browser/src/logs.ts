@@ -21,29 +21,19 @@ export enum EventType {
 export class Logger {
   // @ts-ignore
   private _knex: Knex.Knex<any, unknown[]>;
-  /**
-   * 不含 process.cwd
-   */
   // @ts-ignore
   private logPath: string;
-  /**
-   * 包含 process.cwd 的完整路径
-   */
-  // @ts-ignore
-  private logsDir: string;
 
   constructor() {}
 
   public async init(logPath: string) {
-    const logsDir = path.join(process.cwd(), logPath);
     this.logPath = logPath;
-    this.logsDir = logsDir;
-    await fs.mkdir(logsDir, { recursive: true });
+    await fs.mkdir(logPath, { recursive: true });
 
     this._knex = Knex({
       client: 'better-sqlite3',
       connection: {
-        filename: `./${logPath}/db.sqlite3`,
+        filename: path.join(this.logPath, 'db.sqlite3'),
       },
     });
 
@@ -81,12 +71,34 @@ export class Logger {
         const dt = DateTime.now();
 
         const dirName = dt.toFormat('yyyyMMdd');
-        const logDir = path.join(logger.logsDir, dirName, sessionId);
+        const logDir = path.join(logger.logPath, dirName, sessionId);
         await fs.mkdir(logDir, { recursive: true });
 
         const fileName = `${Date.now()}.png`;
         await fs.writeFile(path.join(logDir, fileName), fileContent);
-        return path.join(logger.logPath, dirName, sessionId, fileName);
+        return path.join(dirName, sessionId, fileName);
+      },
+    };
+  }
+}
+
+// 不打日志的版本
+export class LoggerFake extends Logger {
+  constructor() {
+    super();
+  }
+
+  public async init(logPath: string) {}
+
+  async createEventTable() {}
+
+  async event(data: Partial<Event>) {}
+
+  createContext(sessionId: string, defaultContext: any): LogContext {
+    return {
+      event: async (data: Partial<Event>, context: any = {}) => {},
+      async saveFile(func: () => Promise<Uint8Array>) {
+        return '';
       },
     };
   }
@@ -94,5 +106,9 @@ export class Logger {
 
 export interface LogContext {
   event(data: Partial<Event>, context?: any): Promise<void>;
+  /**
+   *
+   * @returns 返回的路径是相对于 log 目录的
+   */
   saveFile(func: () => Promise<Uint8Array>): Promise<string>;
 }

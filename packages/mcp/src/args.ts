@@ -23,10 +23,15 @@ export function parseArgs() {
       type: 'boolean',
       default: false,
     })
+    .option('log', {
+      type: 'string',
+      default: 'logs',
+    })
     .parseSync();
 
   const agentConfig: AgentConfig = {
     headless: true,
+    log: args.log,
   };
 
   if (args.disableHeadless) {
