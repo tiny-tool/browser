@@ -4,9 +4,10 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { CallToolRequestSchema, ListToolsRequestSchema, ToolSchema } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { SearchAgent, AgentConfig } from '@tiny-tool/browser/agent';
+import { SearchAgent } from '@tiny-tool/browser/agent';
+import { Args } from './args';
 
-export function createServer(config: AgentConfig) {
+export function createServer(args: Args) {
   // Server setup
   const server = new Server(
     {
@@ -49,15 +50,15 @@ export function createServer(config: AgentConfig) {
     };
   });
 
-  const agent = new SearchAgent(config);
+  const agent = new SearchAgent(args.agentConfig);
 
   server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
     try {
-      const { name, arguments: args } = request.params;
+      const { name, arguments: query } = request.params;
 
       switch (name) {
         case 'browser': {
-          const parsed = BrowserSchema.safeParse(args);
+          const parsed = BrowserSchema.safeParse(query);
           const content = await agent.browser(parsed.data?.url!, {
             sessionId: extra.sessionId!,
           });
@@ -67,15 +68,10 @@ export function createServer(config: AgentConfig) {
           };
         }
         case 'search': {
-          const parsed = SearchSchema.safeParse(args);
-          const result = await agent.search(
-            'baidu',
-            parsed.data?.keyword!,
-            { fullContent: true, limit: 1, removeInvisibleElements: false },
-            {
-              sessionId: extra.sessionId!,
-            },
-          );
+          const parsed = SearchSchema.safeParse(query);
+          const result = await agent.search('baidu', parsed.data?.keyword!, args.searchConfig, {
+            sessionId: extra.sessionId!,
+          });
 
           return {
             content: result.organic_results.map((item) => {

@@ -17,7 +17,7 @@ export interface AgentConfig {
 
 const DefalutConfig: AgentConfig = {
   headless: true,
-  log: 'logs',
+  log: '',
 };
 
 async function checkFileExists(fpath: string) {
@@ -195,3 +195,5 @@ export class SearchAgent {
     return content;
   }
 }
+
+export type { Result, SearchOptions };

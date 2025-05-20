@@ -9,13 +9,13 @@ async function main() {
   const args = parseArgs();
   switch (args.type) {
     case 'sse':
-      sse(args.config, args.agentConfig);
+      sse(args);
       break;
     case 'streamable':
-      streamable(args.config, args.agentConfig);
+      streamable(args);
       break;
     case 'stdio':
-      stdio(args.agentConfig);
+      stdio(args);
       break;
   }
 }

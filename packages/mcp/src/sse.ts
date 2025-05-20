@@ -3,10 +3,10 @@
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import express from 'express';
 import { createServer } from './server';
-import { AgentConfig } from '@tiny-tool/browser/agent';
+import { Args } from './args';
 
-export default async function (config: { port: number }, agentConfig: AgentConfig) {
-  const server = createServer(agentConfig);
+export default async function (args: Args) {
+  const server = createServer(args);
 
   const connections = new Map<string, SSEServerTransport>();
 
@@ -15,22 +15,18 @@ export default async function (config: { port: number }, agentConfig: AgentConfi
     const transport = new SSEServerTransport('/messages', res);
 
     const sessionId = transport.sessionId;
-    console.log(`[${new Date().toISOString()}] 新的SSE连接建立: ${sessionId}`);
     connections.set(sessionId, transport);
 
     req.on('close', () => {
-      console.log(`[${new Date().toISOString()}] SSE连接关闭: ${sessionId}`);
       connections.delete(sessionId);
     });
 
     // 将传输对象与MCP服务器连接
     await server.connect(transport);
-    console.log(`[${new Date().toISOString()}] MCP服务器连接成功: ${sessionId}`);
   });
 
   app.post('/messages', async (req, res) => {
     try {
-      console.log(`[${new Date().toISOString()}] 收到客户端消息:`, req.query);
       const sessionId = req.query.sessionId as string;
 
       // 查找对应的SSE连接并处理消息
@@ -51,5 +47,5 @@ export default async function (config: { port: number }, agentConfig: AgentConfi
     }
   });
 
-  app.listen(config.port);
+  app.listen(args.config.port);
 }

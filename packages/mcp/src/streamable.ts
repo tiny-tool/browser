@@ -3,10 +3,10 @@ import { randomUUID } from 'node:crypto';
 import { createServer } from './server';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
-import { AgentConfig } from '@tiny-tool/browser/agent';
+import { Args } from './args';
 
-export default async function (config: { port: number }, agentConfig: AgentConfig) {
-  const server = createServer(agentConfig);
+export default async function (args: Args) {
+  const server = createServer(args);
 
   const app = express();
   app.use(express.json());
@@ -79,5 +79,5 @@ export default async function (config: { port: number }, agentConfig: AgentConfi
   // Handle DELETE requests for session termination
   app.delete('/mcp', handleSessionRequest);
 
-  app.listen(config.port);
+  app.listen(args.config.port);
 }

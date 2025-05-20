@@ -1,8 +1,17 @@
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { AgentConfig } from '@tiny-tool/browser/agent';
+import { AgentConfig, SearchOptions } from '@tiny-tool/browser/agent';
 
-export function parseArgs() {
+export interface Args {
+  type: 'sse' | 'stdio' | 'streamable';
+  config: {
+    port: number;
+  };
+  agentConfig: AgentConfig;
+  searchConfig: SearchOptions;
+}
+
+export function parseArgs(): Args {
   const args = yargs(hideBin(process.argv))
     .env('browser_mcp')
     .config()
@@ -19,13 +28,24 @@ export function parseArgs() {
       default: 3000,
       description: 'Specify the port for the server',
     })
-    .option('disableHeadless', {
+    .option('headless', {
+      type: 'boolean',
+      default: true,
+    })
+    .option('removeInvisibleElements', {
       type: 'boolean',
       default: false,
     })
+    .option('fullContent', {
+      type: 'boolean',
+      default: true,
+    })
+    .option('limit', {
+      type: 'number',
+      default: 1,
+    })
     .option('log', {
       type: 'string',
-      default: 'logs',
     })
     .parseSync();
 
@@ -34,15 +54,22 @@ export function parseArgs() {
     log: args.log,
   };
 
-  if (args.disableHeadless) {
+  if (args.headless === false) {
     agentConfig.headless = false;
   }
 
+  const searchConfig: SearchOptions = {
+    removeInvisibleElements: args.removeInvisibleElements,
+    fullContent: args.fullContent,
+    limit: args.limit,
+  };
+
   return {
-    type: args.type,
+    type: args.type as 'sse' | 'stdio' | 'streamable',
     config: {
       port: args.port,
     },
     agentConfig,
+    searchConfig,
   };
 }
