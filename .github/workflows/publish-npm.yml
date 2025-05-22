@@ -20,6 +20,8 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: |
           pnpm i
+          cp README.md packages/browser/README.md
+          cp README.md packages/mcp/README.md
           cd packages/browser && pnpm build && pnpm publish
           cd ../mcp && pnpm build && pnpm publish
         env:

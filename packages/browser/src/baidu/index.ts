@@ -1,8 +1,18 @@
-import { Page } from 'puppeteer-core';
+import { Page, ElementHandle } from 'puppeteer-core';
 import { OrganicResult, Result, SearchOptions } from '../define';
 import { getRedirectUrl } from '../common/get-redirect-url';
 import { EventType, LogContext } from '../logs';
 import { resolveUrlAndContent } from '../common/get-page-content';
+
+async function findElement(selectorList: string[], el: ElementHandle<Element>): Promise<ElementHandle | null> {
+  for (const selector of selectorList) {
+    const element = await el.$(selector);
+    if (element) {
+      return element;
+    }
+  }
+  return null;
+}
 
 async function extractOrganicResults(page: Page): Promise<OrganicResult[]> {
   const resultList = await page.$$('.result.c-container.new-pmd');
@@ -13,7 +23,12 @@ async function extractOrganicResults(page: Page): Promise<OrganicResult[]> {
   for (const el of resultList) {
     pos++;
     let currentPosition = pos;
-    const title = await el.$('.c-title');
+
+    // 提取标题
+    // 百度可能会调整结构，这里是可能的几个选择器
+    const titleSelectorList = ['.c-title', 'a[data-module="title"]', 'h3[class^="struct-title_"]', 'div[class^="title-box_"]', 'div[class^="title-wrapper_"]'];
+
+    const title = await findElement(titleSelectorList, el);
     if (!title) {
       continue;
     }
@@ -23,13 +38,19 @@ async function extractOrganicResults(page: Page): Promise<OrganicResult[]> {
     }
 
     // const site = await el.$('div[class^="source_"] a[class^="siteLink_"]');
-    const site = await el.$('a[class^="siteLink_"]');
+    // 提取站点名称
+    const siteSelectorList = ['a[class^="siteLink_"]', '.cosc-source-link', '.cosc-source-text'];
+    const site = await findElement(siteSelectorList, el);
     const siteContent = site ? await site.evaluate((el) => el.textContent) : '';
 
-    const link = (await el.$('.c-title a'))!;
+    // 结果对应的跳转链接
+    const titleIsLink = await title.evaluate((el) => el.tagName.toLowerCase() === 'a');
+    const link = titleIsLink ? (title as ElementHandle<HTMLAnchorElement>) : (await title.$('a'))!;
     const linkContent = await link.evaluate((el) => el.href);
 
-    const content = (await el.$('span[class^="content-right"]'))!;
+    // 页面展示的内容
+    const contentSelectorList = ['span[class^="content-right"]', 'div[data-module="abstract"]', 'span[class^="summary-text_"]'];
+    const content = (await findElement(contentSelectorList, el))!;
     const contentContent = content ? await content.evaluate((el) => el.textContent) : '';
 
     ret.push({

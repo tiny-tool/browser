@@ -1,4 +1,5 @@
 import express from 'express';
+import { v4 as uuidv4 } from 'uuid';
 import { SearchAgent } from './search-agent';
 
 const app = express();
@@ -32,12 +33,15 @@ app.get('/api/v1/search', async (req, res) => {
   console.log('req.query', req.query);
   res.send(
     await agent.search(engine as string, decodeURIComponent(q as string), payload, {
-      sessionId: req.query.sessionId as string,
+      sessionId: (req.query.sessionId as string) || uuidv4(),
     }),
   );
 });
 
 app.listen(port, () => {
   console.log(`app listening on port ${port}`);
-  agent = new SearchAgent();
+  agent = new SearchAgent({
+    headless: false,
+    log: './logs',
+  });
 });
