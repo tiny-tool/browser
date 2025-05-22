@@ -32,6 +32,7 @@ export class Logger {
 
     this._knex = Knex({
       client: 'better-sqlite3',
+      useNullAsDefault: true,
       connection: {
         filename: path.join(this.logPath, 'db.sqlite3'),
       },
@@ -49,7 +50,7 @@ export class Logger {
     await this._knex.schema.createTable('events', function (t) {
       t.increments('id').primary();
       t.text('event');
-      t.text('request_id');
+      t.text('session_id');
       t.text('content');
       t.text('context');
     });
