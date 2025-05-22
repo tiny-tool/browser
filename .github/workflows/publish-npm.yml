@@ -26,3 +26,4 @@ jobs:
           cd ../mcp && pnpm build && pnpm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          PNPM_SKIP_GIT_CHECKS: 1
